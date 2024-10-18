@@ -1,71 +1,22 @@
-from fastapi import FastAPI, Query, Body
+from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html
 import uvicorn
 
+from hotels import router as router_hotels
+
 app = FastAPI(docs_url=None)
+
+app.include_router(router_hotels, tags=["Отели"])
 
 hotels = [
     {"id": 1, "title": "Sochi", "name": "sochi"},
-    {"id": 2, "title": "Dubai", "name": "dubai"},
+    {"id": 2, "title": "Дубай", "name": "dubai"},
+    {"id": 3, "title": "Мальдивы", "name": "maldivi"},
+    {"id": 4, "title": "Геленджик", "name": "gelendzhik"},
+    {"id": 5, "title": "Москва", "name": "moscow"},
+    {"id": 6, "title": "Казань", "name": "kazan"},
+    {"id": 7, "title": "Санкт-Петербург", "name": "spb"},
 ]
-
-
-@app.get("/hotels")
-def get_hotels(id: int | None = Query(default=None, description="Identifier"),
-               title: str | None = Query(default=None, description="Hotel name"),):
-    """ Getting all list of hotels from 'db' """
-    hotels_ = []
-    for hotel in hotels:
-        if id and hotel["id"] != id:
-            continue
-        if title and hotel["title"] != title:
-            continue
-        hotels_.append(hotel)
-
-    return hotels_
-
-
-@app.delete("/hotels/{hotel_id}")
-def delete_hotel(hotel_id: int):
-    """ Deleting hotel using hotel id from 'db' """
-    global hotels
-    hotels = [hotel for hotel in hotels if hotel["id"] != hotel_id]
-    return {"status": "OK"}
-
-
-@app.post("/hotels")
-def create_hotel(title: str = Body(embed=True), name: str = Body(embed=True)):
-    global hotels
-    hotels.append({
-        "id": hotels[-1]["id"] + 1,
-        "title": title,
-        "name": name
-        })
-    return {"status": "OK"}
-
-
-@app.put("/hotels/{hotel_id}")
-def put_hotel(hotel_id: int, title: str = Body(embed=True), name: str = Body(embed=True)):
-    global hotels
-    for hotel in hotels:
-        if hotel["id"] == hotel_id:
-            hotel["title"] = title
-            hotel["name"] = name
-            return {"status": "OK"}
-    return {"status:": "ID ERROR"}
-
-
-@app.patch("/hotels/{hotel_id}")
-def patch_hotel(hotel_id: int, title: str | None = Body(None), name: str | None = Body(None)):
-    for hotel in hotels:
-        if hotel["id"] == hotel_id:
-            if title:
-                hotel["title"] = title
-            if name:
-                hotel["name"] = name
-
-            return {"status": "OK"}
-    return {"status:": "ID ERROR"}
 
 
 @app.get("/docs", include_in_schema=False)
