@@ -4,19 +4,28 @@ from schemas.hotels import Hotel, HotelPATCH
 
 router = APIRouter(prefix="/hotels")
 
-
 hotels = [
     {"id": 1, "title": "Sochi", "name": "sochi"},
-    {"id": 2, "title": "Dubai", "name": "dubai"},
+    {"id": 2, "title": "Дубай", "name": "dubai"},
+    {"id": 3, "title": "Мальдивы", "name": "maldivi"},
+    {"id": 4, "title": "Геленджик", "name": "gelendzhik"},
+    {"id": 5, "title": "Москва", "name": "moscow"},
+    {"id": 6, "title": "Казань", "name": "kazan"},
+    {"id": 7, "title": "Санкт-Петербург", "name": "spb"},
 ]
 
 
 @router.get("")
 def get_hotels(id: int | None = Query(default=None, description="ID"),
-               title: str | None = Query(default=None, description="Название отеля"),):
+               title: str | None = Query(default=None, description="Название отеля"),
+               page: int | None = Query(default=1, description="page"),
+               per_page: int | None = Query(default=3, description="page"),):
     """ Получение всех записей отелей из БД """
     hotels_ = []
-    for hotel in hotels:
+    first_hotel_index_in_page = (page*per_page)-per_page
+    last_hotel_index_in_page = page*per_page
+
+    for hotel in hotels[first_hotel_index_in_page:last_hotel_index_in_page]:
         if id and hotel["id"] != id:
             continue
         if title and hotel["title"] != title:
