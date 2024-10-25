@@ -30,11 +30,14 @@ async def get_hotels(pagination: PaginationDep,
         return hotels
 
 
-@router.delete("/{hotel_id}")
-def delete_hotel(hotel_id: int):
+@router.delete("")
+async def delete_hotel(title: str | None = Query(default=None, description="Название отеля"),
+                       location: str | None = Query(default=None, description="Адрес отеля")):
     """ Удаление записи отеля из БД """
-    global hotels
-    hotels = [hotel for hotel in hotels if hotel["id"] != hotel_id]
+
+    async with async_session_maker() as session:
+        await HotelsRepository(session).delete(title, location)
+        await session.commit()
     return {"status": "OK"}
 
 
@@ -46,24 +49,31 @@ async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
     "2": {"summary": "Dubai", "value": {
         "title": "Hotel 5 stars",
         "location": "Dubai, st. Sea 16"}}
-})):
+        })):
     """ Создание новой записи отеля в БД """
     async with async_session_maker() as session:
-        data = await HotelsRepository(session).add(hotel_data)
+        hotel = await HotelsRepository(session).add(hotel_data)
         await session.commit()
-    return {"status": "OK", "data": data}
+    return {"status": "OK", "data": hotel}
 
 
-@router.put("/{hotel_id}")
-def put_hotel(hotel_id: int, hotel_data: Hotel):
+@router.put("")
+async def put_hotel(title: str | None = Query(default=None, description="Название отеля"),
+                    location: str | None = Query(default=None, description="Адрес отеля"),
+                    hotel_data: Hotel = Body(openapi_examples={
+                    "1": {"summary": "Сочи", "value": {
+                          "title": "Отель у моря 5 звезд",
+                          "location": "Сочи, ул. приморская 7"}},
+                    "2": {"summary": "Dubai", "value": {
+                          "title": "Hotel 5 stars",
+                          "location": "Dubai, st. Sea 16"}}
+                          })):
     """ Полное изменение записи БД """
-    global hotels
-    for hotel in hotels:
-        if hotel["id"] == hotel_id:
-            hotel["title"] = hotel_data.title
-            hotel["name"] = hotel_data.name
-            return {"status": "OK"}
-    return {"status:": "ID ERROR"}
+    async with async_session_maker() as session:
+        await HotelsRepository(session).edit(hotel_data, title, location)
+        await session.commit()
+    return {"status": "OK"}
+
 
 
 @router.patch("/{hotel_id}",
