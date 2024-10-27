@@ -1,9 +1,6 @@
 from fastapi import Query, Body, APIRouter
 
-from sqlalchemy import insert, select, func
-
-from src.models.hotels import HotelsORM
-from src.database import async_session_maker, engine
+from src.database import async_session_maker
 from src.repositories.hotels import HotelsRepository
 from src.schemas.hotels import Hotel, HotelPATCH
 from src.api.dependencies import PaginationDep
@@ -30,13 +27,18 @@ async def get_hotels(pagination: PaginationDep,
         return hotels
 
 
-@router.delete("")
-async def delete_hotel(title: str | None = Query(default=None, description="Название отеля"),
-                       location: str | None = Query(default=None, description="Адрес отеля")):
-    """ Удаление записи отеля из БД """
+@router.get("/{hotel_id}")
+async def get_one_hotel(hotel_id: int):
+    async with (async_session_maker() as session):
+        hotel = await HotelsRepository(session).get_one_or_none_hotel(hotel_id)
 
+        return hotel
+
+
+@router.delete("")
+async def delete_hotel(hotel_id: int):
     async with async_session_maker() as session:
-        await HotelsRepository(session).delete(title, location)
+        await HotelsRepository(session).delete(id=hotel_id)
         await session.commit()
     return {"status": "OK"}
 
@@ -58,36 +60,20 @@ async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
 
 
 @router.put("")
-async def put_hotel(title: str | None = Query(default=None, description="Название отеля"),
-                    location: str | None = Query(default=None, description="Адрес отеля"),
-                    hotel_data: Hotel = Body(openapi_examples={
-                    "1": {"summary": "Сочи", "value": {
-                          "title": "Отель у моря 5 звезд",
-                          "location": "Сочи, ул. приморская 7"}},
-                    "2": {"summary": "Dubai", "value": {
-                          "title": "Hotel 5 stars",
-                          "location": "Dubai, st. Sea 16"}}
-                          })):
-    """ Полное изменение записи БД """
+async def edit_hotel(hotel_id: int, hotel_data: Hotel):
     async with async_session_maker() as session:
-        await HotelsRepository(session).edit(hotel_data, title, location)
+        await HotelsRepository(session).edit(hotel_data, id=hotel_id)
         await session.commit()
     return {"status": "OK"}
-
 
 
 @router.patch("/{hotel_id}",
               summary="",
               description="")
-def patch_hotel(hotel_id: int, hotel_data: HotelPATCH):
+async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH):
     """ Частичное изменение записи отеля в БД """
-    for hotel in hotels:
-        if hotel["id"] == hotel_id:
-            if hotel_data.title:
-                hotel["title"] = hotel_data.title
-            if hotel_data.name:
-                hotel["name"] = hotel_data.name
+    async with async_session_maker() as session:
+        await HotelsRepository(session).edit(hotel_data, True, id=hotel_id)
+        await session.commit()
 
-            return {"status": "OK"}
-    return {"status:": "ID ERROR"}
-
+    return {"status": "OK"}
