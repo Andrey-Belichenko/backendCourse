@@ -2,10 +2,13 @@ from sqlalchemy import select, insert, func
 
 from src.repositories.base import BaseRepository
 from src.models.hotels import HotelsORM
+from src.schemas.hotels import Hotel
 
 
 class HotelsRepository(BaseRepository):
     model = HotelsORM
+
+    schema = Hotel
 
     async def get_all(
             self,
@@ -26,10 +29,4 @@ class HotelsRepository(BaseRepository):
         )
 
         result = await self.session.execute(query)
-        return result.scalars().all()
-
-    async def get_one_or_none_hotel(self, hotel_id):
-        query = select(self.model).filter_by(id=hotel_id)
-
-        result = await self.session.execute(query)
-        return result.scalars().one_or_none()
+        return [self.schema.model_validate(model) for model in result.scalars().all()]
