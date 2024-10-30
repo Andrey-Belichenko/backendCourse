@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response, Request
 
 from src.repositories.users import UsersRepository
 from src.services.auth import AuthService
@@ -42,6 +42,20 @@ async def login_user(
             raise HTTPException(status_code=401, detail="Пароль не верный")
 
         access_token = AuthService().create_access_token({"user_id": user.id})
-        response.set_cookie(key=access_token)
+        response.set_cookie("access_token", access_token)
 
     return {"access_token": access_token}
+
+
+@router.get("/only_auth")
+async def only_auth(
+        request: Request,
+):
+
+    if 'access_token' not in request.cookies.keys():
+        access_token = None
+        return access_token
+
+    access_token = request.cookies['access_token']
+
+    return access_token
