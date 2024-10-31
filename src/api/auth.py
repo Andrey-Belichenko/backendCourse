@@ -4,6 +4,7 @@ from src.repositories.users import UsersRepository
 from src.services.auth import AuthService
 from src.database import async_session_maker
 from src.schemas.users import UserRequestAdd, UserAdd
+from src.api.dependencies import UserIdDep
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и Аутентификация"])
 
@@ -47,15 +48,33 @@ async def login_user(
     return {"access_token": access_token}
 
 
-@router.get("/only_auth")
-async def only_auth(
+@router.get("/me")
+async def me(
         request: Request,
-):
+        user_id: UserIdDep,
+        ):
 
-    if 'access_token' not in request.cookies.keys():
-        access_token = None
-        return access_token
+    access_token = request.cookies.get('access_token', None)
+    data = AuthService().encode_token(access_token)
 
-    access_token = request.cookies['access_token']
+    user_id = data["user_id"]
 
-    return access_token
+    async with async_session_maker() as session:
+        user = await UsersRepository(session).get_one_or_none(id=user_id)
+
+    return user
+
+@router.put("/logout")
+async def logout(
+        request: Request,
+        response: Response,
+        ):
+
+    access_token = request.cookies.get('access_token', None)
+
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Пользователь не авторизован")
+
+    response.delete_cookie("access_token")
+
+    return {"status ": "200"}
