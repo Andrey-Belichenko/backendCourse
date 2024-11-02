@@ -64,7 +64,8 @@ async def me(
 
     return user
 
-@router.put("/logout")
+
+@router.post("/logout")
 async def logout(
         request: Request,
         response: Response,

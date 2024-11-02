@@ -18,5 +18,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int
 
+    DEFAULT_PAGINATION: int
+
 
 settings = Settings()

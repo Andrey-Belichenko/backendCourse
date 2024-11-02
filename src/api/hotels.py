@@ -4,8 +4,9 @@ from src.database import async_session_maker
 from src.repositories.hotels import HotelsRepository
 from src.schemas.hotels import HotelAdd, HotelPATCH
 from src.api.dependencies import PaginationDep
+from src.config import settings
 
-router = APIRouter(prefix="/hotels")
+router = APIRouter(prefix="/hotels", tags=["Отели"])
 
 
 @router.get("")
@@ -14,7 +15,7 @@ async def get_hotels(pagination: PaginationDep,
                      location: str | None = Query(default=None, description="Адрес отеля")
                      ):
     """ Получение всех записей отелей из БД """
-    per_page = pagination.per_page or 5
+    per_page = pagination.per_page or settings.DEFAULT_PAGINATION
 
     async with (async_session_maker() as session):
         hotels = await HotelsRepository(session).get_all(
@@ -35,7 +36,7 @@ async def get_one_hotel(hotel_id: int):
         return hotel
 
 
-@router.delete("")
+@router.delete("/{hotel_id}")
 async def delete_hotel(hotel_id: int):
     async with async_session_maker() as session:
         await HotelsRepository(session).delete(id=hotel_id)
@@ -59,7 +60,7 @@ async def create_hotel(hotel_data: HotelAdd = Body(openapi_examples={
     return {"status": "OK", "data": hotel}
 
 
-@router.put("")
+@router.put("/{hotel_id}")
 async def edit_hotel(hotel_id: int, hotel_data: HotelAdd):
     async with async_session_maker() as session:
         await HotelsRepository(session).edit(hotel_data, id=hotel_id)
