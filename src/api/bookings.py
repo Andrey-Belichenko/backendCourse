@@ -25,7 +25,7 @@ async def create_booking(db: DBDep,
 
 
 @router.get("")
-async def bookings(db: DBDep):
+async def get_bookings(db: DBDep):
 
     all_bookings = await db.bookings.get_all()
 
@@ -33,8 +33,9 @@ async def bookings(db: DBDep):
 
 
 @router.get("/me")
-async def my_bookings(db: DBDep,
-                      user_id: UserIdDep,):
+async def get_my_bookings(db: DBDep,
+                          user_id: UserIdDep,):
+
     _bookings = await db.bookings.get_filtered(user_id=user_id)
 
     return {"bookings": _bookings}

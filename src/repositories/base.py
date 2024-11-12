@@ -1,4 +1,5 @@
-from sqlalchemy import select, insert, update, delete
+from sqlalchemy import select, insert, update, delete, func
+
 from pydantic import BaseModel
 
 
@@ -10,8 +11,34 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
-    async def get_filtered(self, **filter_by):
-        query = select(self.model).filter_by(**filter_by)
+    async def get_filtered(self,
+                           filter,
+                           filter_by,
+                           location=None,
+                           title=None,
+                           limit=None,
+                           offset=None
+
+                           ):
+
+        query = (
+            select(self.model)
+            .filter(*filter)
+            .filter_by(**filter_by)
+        )
+
+        if location:
+            query = query.filter(func.lower(self.model.location).contains(location.strip().lower()))
+        if title:
+            query = query.filter(func.lower(self.model.title).contains(title.strip().lower()))
+
+        if limit and offset:
+            query = (
+                query
+                .limit(limit)
+                .offset(offset)
+            )
+
         result = await self.session.execute(query)
         return [self.schema.model_validate(model) for model in result.scalars().all()]
 
