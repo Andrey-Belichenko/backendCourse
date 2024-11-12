@@ -12,13 +12,8 @@ class BaseRepository:
         self.session = session
 
     async def get_filtered(self,
-                           filter,
-                           filter_by,
-                           location=None,
-                           title=None,
-                           limit=None,
-                           offset=None
-
+                           *filter,
+                           **filter_by,
                            ):
 
         query = (
@@ -26,18 +21,6 @@ class BaseRepository:
             .filter(*filter)
             .filter_by(**filter_by)
         )
-
-        if location:
-            query = query.filter(func.lower(self.model.location).contains(location.strip().lower()))
-        if title:
-            query = query.filter(func.lower(self.model.title).contains(title.strip().lower()))
-
-        if limit and offset:
-            query = (
-                query
-                .limit(limit)
-                .offset(offset)
-            )
 
         result = await self.session.execute(query)
         return [self.schema.model_validate(model) for model in result.scalars().all()]

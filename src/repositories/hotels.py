@@ -39,10 +39,10 @@ class HotelsRepository(BaseRepository):
     async def get_filtered_by_time(self,
                                    date_from: date,
                                    date_to: date,
-                                   location=None,
-                                   title=None,
-                                   limit=None,
-                                   offset=None,
+                                   location,
+                                   title,
+                                   limit,
+                                   offset,
     ):
 
         rooms_ids_to_get = rooms_ids_for_booking(date_from=date_from, date_to=date_to)
@@ -53,11 +53,19 @@ class HotelsRepository(BaseRepository):
             .filter(RoomsORM.id.in_(rooms_ids_to_get))
         )
 
-        query = await self.get_filtered(filter=HotelsORM.id.in_(hotels_ids_to_get),
-                                        location=location,
-                                        title=title,
-                                        limit=limit,
-                                        offset=offset,
-                                        )
+        query = select(HotelsORM).filter(HotelsORM.id.in_(hotels_ids_to_get))
 
-        return query
+        if location:
+            query = query.filter(func.lower(self.model.location).contains(location.strip().lower()))
+        if title:
+            query = query.filter(func.lower(self.model.title).contains(title.strip().lower()))
+
+        query = (
+            query
+            .limit(limit)
+            .offset(offset)
+        )
+
+        result = await self.session.execute(query)
+
+        return [self.schema.model_validate(model) for model in result.scalars().all()]
