@@ -14,28 +14,6 @@ class HotelsRepository(BaseRepository):
 
     schema = Hotel
 
-    async def get_all(
-            self,
-            location,
-            title,
-            limit,
-            offset
-    ):
-        query = select(HotelsORM)
-
-        if location:
-            query = query.filter(func.lower(HotelsORM.location).contains(location.strip().lower()))
-        if title:
-            query = query.filter(func.lower(HotelsORM.title).contains(title.strip().lower()))
-        query = (
-            query
-            .limit(limit)
-            .offset(offset)
-        )
-
-        result = await self.session.execute(query)
-        return [self.schema.model_validate(model) for model in result.scalars().all()]
-
     async def get_filtered_by_time(self,
                                    date_from: date,
                                    date_to: date,

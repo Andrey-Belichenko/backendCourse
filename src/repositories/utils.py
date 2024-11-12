@@ -41,7 +41,7 @@ def rooms_ids_for_booking(date_from: date,
 
     get_rooms_ids_for_hotel = (
         get_rooms_ids_for_hotel
-        .subquery()
+        # .subquery()
     )
 
     rooms_ids_to_get = (

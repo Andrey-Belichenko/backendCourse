@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body
 
 from src.schemas.bookings import BookingAddRequest, BookingAdd
 from src.api.dependencies import DBDep, UserIdDep
