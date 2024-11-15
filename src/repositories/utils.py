@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import select, func, Subquery
 from datetime import date
 
 from src.models.bookings import BookingsORM
@@ -36,20 +36,17 @@ def rooms_ids_for_booking(date_from: date,
         .select_from(RoomsORM)
     )
 
-    if hotel_id is not None:
-        get_rooms_ids_for_hotel.filter_by(hotel_id=hotel_id)
+    if hotel_id:
+        get_rooms_ids_for_hotel = get_rooms_ids_for_hotel.filter_by(hotel_id=hotel_id)
 
-    get_rooms_ids_for_hotel = (
-        get_rooms_ids_for_hotel
-        # .subquery()
-    )
+    get_rooms_ids_for_hotel_sub: Subquery = get_rooms_ids_for_hotel.subquery(name="get_ids_for_hotels")
 
     rooms_ids_to_get = (
         select(rooms_left_tabel.c.room_id)
         .select_from(rooms_left_tabel)
         .filter(
                 rooms_left_tabel.c.rooms_left > 0,
-                rooms_left_tabel.c.room_id.in_(get_rooms_ids_for_hotel)
+                rooms_left_tabel.c.room_id.in_(get_rooms_ids_for_hotel_sub)  # type: ignore
                 )
         )
 
