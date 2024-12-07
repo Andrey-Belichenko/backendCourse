@@ -29,11 +29,11 @@ async def get_one_room(db: DBDep,
     return room
 
 
-@router.post("/{hotel_id}/rooms/{room_id}")
+@router.post("/{hotel_id}/rooms")
 async def create_room(db: DBDep,
                       hotel_id: int,
                       room_data: RoomAddRequest = Body()):
-    """ Создание новой записи отеля в БД """
+    """ Создание новой записи номера в БД """
 
     _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
 

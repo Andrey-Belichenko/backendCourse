@@ -4,6 +4,7 @@ from sqlalchemy import select, insert, func
 
 from src.models.rooms import RoomsORM
 from src.repositories.base import BaseRepository
+from src.repositories.mappers.mappers import HotelDataMapper
 from src.repositories.utils import rooms_ids_for_booking
 from src.models.hotels import HotelsORM
 from src.schemas.hotels import Hotel
@@ -12,7 +13,7 @@ from src.schemas.hotels import Hotel
 class HotelsRepository(BaseRepository):
     model = HotelsORM
 
-    schema = Hotel
+    mapper = HotelDataMapper
 
     async def get_filtered_by_time(self,
                                    date_from: date,
@@ -46,4 +47,4 @@ class HotelsRepository(BaseRepository):
 
         result = await self.session.execute(query)
 
-        return [self.schema.model_validate(model) for model in result.scalars().all()]
+        return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]

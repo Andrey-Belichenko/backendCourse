@@ -50,7 +50,7 @@ async def me(db: DBDep,
              ):
 
     access_token = request.cookies.get('access_token', None)
-    data = AuthService().encode_token(access_token)
+    data = AuthService().decode_token(access_token)
 
     user_id = data["user_id"]
 
