@@ -17,4 +17,21 @@ async def test_booking_crud(db):
     )
 
     new_booking_data = await db.bookings.add(booking_data)
+
+    loaded_booking_data = (await db.bookings.get_all())[new_booking_data.id-1]
+
+    assert new_booking_data == loaded_booking_data
+
+    booking_data_to_modify = BookingAdd(
+        room_id=room_id,
+        user_id=user_id,
+        date_from=date(year=2023, month=5, day=10),
+        date_to=date(year=2024, month=5, day=15),
+        price=150
+    )
+
+    modified_booking_data = await db.bookings.edit(booking_data_to_modify)
+
+    assert modified_booking_data is not new_booking_data
+
     await db.commit()
