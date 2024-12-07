@@ -30,8 +30,14 @@ async def test_booking_crud(db):
         price=150
     )
 
-    modified_booking_data = await db.bookings.edit(booking_data_to_modify)
+    await db.bookings.edit(booking_data_to_modify)
+
+    modified_booking_data = (await db.bookings.get_all())[new_booking_data.id-1]
 
     assert modified_booking_data is not new_booking_data
+
+    await db.bookings.delete(id=modified_booking_data.id)
+
+    assert await db.bookings.get_one_or_none() == None
 
     await db.commit()
