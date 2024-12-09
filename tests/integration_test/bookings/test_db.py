@@ -38,6 +38,6 @@ async def test_booking_crud(db):
 
     await db.bookings.delete(id=modified_booking_data.id)
 
-    assert await db.bookings.get_one_or_none() == None
+    assert not await db.bookings.get_one_or_none()
 
     await db.commit()
