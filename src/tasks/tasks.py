@@ -9,13 +9,6 @@ import os
 
 from src.utils.db_manager import DBManager
 
-
-@celery_instance.task
-def test_task():
-    sleep(5)
-    print("Task ended")
-
-
 # @celery_instance.task
 def resize_image(image_path: str):
     sizes = [1000, 500, 200]

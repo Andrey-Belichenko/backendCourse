@@ -2,6 +2,11 @@ import json
 
 import pytest
 
+from fastapi import Request
+from unittest import mock
+
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
+
 from src.api.dependencies import get_db
 from src.config import settings
 from src.database import BaseORM, engine_null_pool, async_session_maker_null_pool
@@ -14,9 +19,11 @@ from src.schemas.rooms import RoomAdd
 from src.utils.db_manager import DBManager
 
 
+
 @pytest.fixture(scope="session", autouse=True)
 def check_test_mode():
     assert settings.MODE == "TEST"
+
 
 async def get_db_null_pool():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
@@ -68,3 +75,18 @@ async def register_user(ac, setup_database):
               "password": "test_password"}
         )
 
+
+@pytest.fixture(scope="session", autouse=True)
+async def auth_ac(ac, register_user, request: Request) -> AsyncClient:
+    access_token = await ac.post("/auth/login",
+                                 json={"email": "user@auto.com",
+                                       "password": "test_password"}
+                                 )
+
+    assert access_token.json()["access_token"] is not None
+
+    async with AsyncClient(app=app,
+                           base_url="http://test",
+                           headers={'Authorization': f"Token {access_token.json()["access_token"]}"}
+                           ) as ac:
+        yield ac
