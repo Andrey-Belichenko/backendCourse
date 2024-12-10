@@ -7,6 +7,5 @@ async def test_get_hotel(ac):
                                     }
                             )
 
-    print(f"{response.json()=}")
 
     assert response.status_code == 200
