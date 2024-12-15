@@ -2,6 +2,7 @@ import pytest
 
 from src.database import engine_null_pool
 from src.models import BookingsORM
+from tests.conftest import get_db_null_pool
 
 
 @pytest.mark.parametrize("room_id, date_from, date_to, status_code", [
@@ -37,18 +38,19 @@ async def test_add_bookings(
         assert "data" in res
 
 
-@pytest.fixture(scope="function")
-async def drop_all_bookings_rows(db):
-    res = await db.bookings.delete(room_id=1)
-    await db.commit()
+@pytest.fixture(scope="module")
+async def drop_all_bookings_rows():
+    async for _db in get_db_null_pool():
+        await _db.bookings.delete()
+        await _db.commit()
 
 
 @pytest.mark.parametrize("room_id, date_from, date_to, bookings_quantity", [
-                        (2, "2024-08-01", "2024-08-10", 1),
-                        (2, "2024-08-02", "2024-08-11", 2),
-                        (2, "2024-08-03", "2024-08-12", 3),
-                        (2, "2024-08-04", "2024-08-13", 4),
-                        (2, "2024-08-05", "2024-08-15", 5),
+                        (1, "2024-08-01", "2024-08-10", 1),
+                        (1, "2024-08-02", "2024-08-11", 2),
+                        (1, "2024-08-03", "2024-08-12", 3),
+                        (1, "2024-08-04", "2024-08-13", 4),
+                        (1, "2024-08-05", "2024-08-15", 5),
                         ])
 async def test_add_and_get_bookings(
         room_id,
