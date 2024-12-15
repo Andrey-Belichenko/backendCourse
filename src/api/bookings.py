@@ -12,17 +12,19 @@ async def create_booking(db: DBDep,
                          booking_request: BookingAddRequest = Body()):
     """ Создание бронирования номера """
     room = await db.rooms.get_one_or_none(id=booking_request.room_id)
+    hotel = await db.hotels.get_one_or_none(id=room.hotel_id)
+
     room_price: int = room.price
 
     _booking_data = BookingAdd(user_id=user_id,
                                price=room_price,
                                **booking_request.dict())
 
-    booking = await db.bookings.add_booking(_booking_data)
+    booking = await db.bookings.add_booking(_booking_data, hotel_id=hotel.id)
 
     await db.commit()
 
-    return {"booking": booking}
+    return {"status": "OK", "data": booking}
 
 
 @router.get("")

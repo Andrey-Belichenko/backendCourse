@@ -41,7 +41,6 @@ app.dependency_overrides[get_db] = get_db_null_pool
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_test_mode):
-
     async with engine_null_pool.begin() as conn:
         await conn.run_sync(BaseORM.metadata.drop_all)
         await conn.run_sync(BaseORM.metadata.create_all)
