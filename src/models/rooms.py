@@ -1,6 +1,11 @@
+import typing
+
 from src.database import BaseORM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
+
+if typing.TYPE_CHECKING:
+    from src.models import FacilitiesORM
 
 
 class RoomsORM(BaseORM):
@@ -17,5 +22,3 @@ class RoomsORM(BaseORM):
         back_populates="rooms",
         secondary="rooms_facilities",
     )
-
-

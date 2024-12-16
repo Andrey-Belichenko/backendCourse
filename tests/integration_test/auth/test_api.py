@@ -1,69 +1,58 @@
 import pytest
-from httpx import AsyncClient
 
 
-@pytest.mark.parametrize("user_email, user_password", [
-                        ("user1@test.com", "test_password"),
-                        ("user2@test.com", "тест пароль"),
-                        ("user3@test.com", ""),
-                        ("a@a.com", ""),
-                        ])
-async def test_create_user(user_email, user_password,
-                           ac):
-    response = await ac.post(
+@pytest.mark.parametrize(
+    "email, password, status_code",
+    [
+        ("k0t@pes.com", "1234", 200),
+        ("k0t@pes.com", "1234", 400),
+        ("k0t1@pes.com", "1235", 200),
+        ("abcde", "1235", 422),
+        ("abcde@abc", "1235", 422),
+    ],
+)
+async def test_auth_flow(email: str, password: str, status_code: int, ac):
+    # /register
+    resp_register = await ac.post(
         "/auth/register",
-        json={"email": user_email,
-              "password": user_password}
+        json={
+            "email": email,
+            "password": password,
+        },
     )
 
-    assert response.status_code == 200
+    assert resp_register.status_code == status_code
 
+    if status_code != 200:
+        return
 
-@pytest.mark.parametrize("user_email, user_password", [
-                        ("user1@test.com", "test_password"),
-                        ("user2@test.com", "тест пароль"),
-                        ("user3@test.com", ""),
-                        ])
-async def test_login_user(user_email, user_password,
-                          ac):
-    access_token = await ac.post("/auth/login",
-                                 json={"email": user_email,
-                                       "password": user_password}
-                                 )
+    # /login
+    resp_login = await ac.post(
+        "/auth/login",
+        json={
+            "email": email,
+            "password": password,
+        },
+    )
 
-    assert access_token.json()["access_token"] is not None
+    assert resp_login.status_code == 200
     assert ac.cookies["access_token"]
+    assert "access_token" in resp_login.json()
 
+    # /me
+    resp_me = await ac.get("/auth/me")
 
-@pytest.mark.parametrize("user_email, user_password", [
-                        ("user1@test.com", "test_password"),
-                        ])
-async def test_login_and_logout(user_email, user_password,
-                                ac):
+    assert resp_me.status_code == 200
 
-    access_token = await ac.post("/auth/login",
-                                 json={"email": user_email,
-                                       "password": user_password}
-                                 )
+    user = resp_me.json()
 
-    assert access_token.json()["access_token"] is not None
-    assert ac.cookies["access_token"]
+    assert user["email"] == email
+    assert "id" in user
+    assert "password" not in user
+    assert "hashed_password" not in user
 
-    assert ac.cookies["access_token"]
+    # /logout
+    resp_logout = await ac.post("/auth/logout")
 
-    print(f"{ac.cookies=}")
-
-    response = await ac.get("/auth/me")
-
-    assert response.status_code == 200
-    assert response.json()
-
-    response = await ac.post("/auth/logout")
-
-    assert response.status_code == 200
-    assert not ac.cookies
-
-    response = await ac.get("/auth/me")
-
-    assert response.status_code == 401
-    assert response.json()['detail'] == 'Вы не предоставили токен доступа'
+    assert resp_logout.status_code == 200
+    assert "access_token" not in ac.cookies

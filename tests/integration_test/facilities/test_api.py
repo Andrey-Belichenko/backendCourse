@@ -1,6 +1,3 @@
-from src.schemas.facilities import FacilitiesAdd
-
-
 async def test_get_facilities(ac):
     response = await ac.get("/facilities")
 
@@ -19,6 +16,3 @@ async def test_post_facilities(ac):
     assert isinstance(res, dict)
     assert res["facility"]["title"] == facility_title
     assert "facility" in res
-
-
-

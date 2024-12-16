@@ -1,8 +1,8 @@
+# ruff: noqa: E402
 import json
 
 import pytest
 
-from fastapi import Request
 from unittest import mock
 
 mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
@@ -11,13 +11,12 @@ from src.api.dependencies import get_db
 from src.config import settings
 from src.database import BaseORM, engine_null_pool, async_session_maker_null_pool
 from src.main import app
-from src.models import *
+from src.models import *  # noqa
 from httpx import AsyncClient
 
 from src.schemas.hotels import HotelAdd
 from src.schemas.rooms import RoomAdd
 from src.utils.db_manager import DBManager
-
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -69,18 +68,15 @@ async def ac() -> AsyncClient:
 @pytest.fixture(scope="session", autouse=True)
 async def register_user(ac, setup_database):
     await ac.post(
-        "/auth/register",
-        json={"email": "user@auto.com",
-              "password": "test_password"}
-        )
+        "/auth/register", json={"email": "user@auto.com", "password": "test_password"}
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def authenticated_ac(register_user, ac) -> AsyncClient:
-    access_token = await ac.post("/auth/login",
-                                 json={"email": "user@auto.com",
-                                       "password": "test_password"}
-                                 )
+    access_token = await ac.post(
+        "/auth/login", json={"email": "user@auto.com", "password": "test_password"}
+    )
 
     assert access_token.json()["access_token"] is not None
     assert ac.cookies["access_token"]

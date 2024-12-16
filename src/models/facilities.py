@@ -1,6 +1,11 @@
+import typing
+
 from src.database import BaseORM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey
+
+if typing.TYPE_CHECKING:
+    from src.models import RoomsORM
 
 
 class FacilitiesORM(BaseORM):
@@ -21,4 +26,3 @@ class RoomsFacilitiesORM(BaseORM):
     id: Mapped[int] = mapped_column(primary_key=True)
     room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"))
     facility_id: Mapped[int] = mapped_column(ForeignKey("facilities.id"))
-

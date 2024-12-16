@@ -8,7 +8,7 @@ router = APIRouter(prefix="/images", tags=["Изображения отелей"
 
 
 @router.post("")
-async def upload_image(file: UploadFile,  background_tasks: BackgroundTasks):
+async def upload_image(file: UploadFile, background_tasks: BackgroundTasks):
     image_path = f"src/static/images/{file.filename}"
     with open(image_path, "wb+") as new_file:
         shutil.copyfileobj(file.file, new_file)
