@@ -1,16 +1,15 @@
-from typing import TypeVar
+from typing import TypeVar, Type
 
 from pydantic import BaseModel
 
 from src.database import BaseORM
 
-DBModelType = TypeVar("DBModelType", bound=BaseORM)
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
 
 
 class DataMapper:
-    db_model: type[DBModelType] = None
-    schema: type[SchemaType] = None
+    db_model: Type[BaseORM]
+    schema: Type[SchemaType]
 
     @classmethod
     def map_to_domain_entity(cls, db_model):
