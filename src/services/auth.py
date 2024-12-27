@@ -1,13 +1,22 @@
 from datetime import datetime, timezone, timedelta
 
 import jwt
-from fastapi import HTTPException
 from passlib.context import CryptContext
+
+from exceptions.exceptions import UnauthorizedUserException, IncorrectTokenException, ObjectAlreadyExistException, \
+    UserAlreadyExistException
+from services.base import BaseService
 from src.config import settings
 
 
-class AuthService:
+class AuthService(BaseService):
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    def get_access_token_with_check(self, request):
+        access_token = request.cookies.get("access_token", None)
+        if not access_token:
+            raise UnauthorizedUserException
+        return access_token
 
     def create_access_token(self, data: dict) -> str:
         to_encode = data.copy()
@@ -30,4 +39,29 @@ class AuthService:
         try:
             return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         except jwt.exceptions.DecodeError:
-            raise HTTPException(status_code=401, detail="Не верный токен")
+            raise IncorrectTokenException
+
+    async def get_one_user_with_hashed_password(self, email):
+        user = await self.db.users.get_user_with_hashed_password(email=email)
+
+        return user
+
+    async def logout_user(self, request, response):
+        self.get_access_token_with_check(request)
+        response.delete_cookie("access_token")
+
+    async def get_current_user(self, request, user_id):
+        access_token = self.get_access_token_with_check(request)
+        print(f"{access_token=}")
+        data = AuthService().decode_token(access_token)
+        user_id = data["user_id"]
+        user = await self.db.users.get_one_or_none(id=user_id)
+
+        return user
+
+    async def register_user(self, new_user_data):
+        try:
+            await self.db.users.add(new_user_data)
+            await self.db.commit()
+        except ObjectAlreadyExistException:  # noqa: E722
+            raise UserAlreadyExistException

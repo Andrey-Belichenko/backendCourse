@@ -1,5 +1,8 @@
-from fastapi import APIRouter, HTTPException, Response, Request
+from fastapi import APIRouter, Response, Request
 
+from exceptions.exceptions import UserWithThisEmailAlreadyExistHTTPException, \
+    IncorrectPasswordHTTPException, UnauthorizedUserException, UnauthorizedUserHTTPException, IncorrectTokenException, \
+    IncorrectTokenHTTPException, UserAlreadyExistException, UserAlreadyExistHTTPException
 from src.services.auth import AuthService
 from src.schemas.users import UserRequestAdd, UserAdd
 from src.api.dependencies import UserIdDep, DBDep
@@ -12,16 +15,14 @@ async def register_user(
     db: DBDep,
     data: UserRequestAdd,
 ):
+    hashed_password = AuthService().hashed_password(data.password)
+
+    new_user_data = UserAdd(email=data.email, hashed_password=hashed_password)
+
     try:
-        hashed_password = AuthService().hashed_password(data.password)
-
-        new_user_data = UserAdd(email=data.email, hashed_password=hashed_password)
-
-        await db.users.add(new_user_data)
-        await db.commit()
-
-    except:  # noqa: E722
-        raise HTTPException(status_code=400)
+        await AuthService(db).register_user(new_user_data)
+    except UserAlreadyExistException:
+        raise UserAlreadyExistHTTPException
 
     return {"status": "OK"}
 
@@ -32,18 +33,13 @@ async def login_user(
     data: UserRequestAdd,
     response: Response,
 ):
-    # hashed_password = pwd_context.hash(data.password)
-    # new_user_data = UserAdd(email=data.email, hashed_password=hashed_password)
-
-    user = await db.users.get_user_with_hashed_password(email=data.email)
+    user = await AuthService(db).get_one_user_with_hashed_password(email=data.email)
 
     if not user:
-        raise HTTPException(
-            status_code=401, detail="Пользователь с таким email не зарегистрирован "
-        )
+        raise UserWithThisEmailAlreadyExistHTTPException
 
     if not AuthService().verify_password(data.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Пароль не верный")
+        raise IncorrectPasswordHTTPException
 
     access_token = AuthService().create_access_token({"user_id": user.id})
     response.set_cookie("access_token", access_token)
@@ -57,13 +53,10 @@ async def me(
     request: Request,
     user_id: UserIdDep,
 ):
-    access_token = request.cookies.get("access_token", None)
-    data = AuthService().decode_token(access_token)
-
-    user_id = data["user_id"]
-
-    user = await db.users.get_one_or_none(id=user_id)
-
+    try:
+        user = await AuthService(db).get_current_user(request, user_id)
+    except IncorrectTokenException:
+        raise IncorrectTokenHTTPException
     return user
 
 
@@ -72,11 +65,9 @@ async def logout(
     request: Request,
     response: Response,
 ):
-    access_token = request.cookies.get("access_token", None)
-
-    if not access_token:
-        raise HTTPException(status_code=401, detail="Пользователь не авторизован")
-
-    response.delete_cookie("access_token")
+    try:
+        await AuthService().logout_user(request, response)
+    except UnauthorizedUserException:
+        raise UnauthorizedUserHTTPException
 
     return {"status ": "200"}

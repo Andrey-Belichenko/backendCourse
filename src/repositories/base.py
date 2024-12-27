@@ -1,13 +1,16 @@
+import logging
+
 import sqlalchemy
+from asyncpg import UniqueViolationError
 from sqlalchemy import select, insert, update, delete
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.exc import InvalidRequestError, IntegrityError
 
 from typing import Sequence
 
 from pydantic import BaseModel
 from sqlalchemy.exc import NoResultFound
 
-from exceptions.exceptions import ObjectNotFoundException, ObjectDoseNotExistException
+from exceptions.exceptions import ObjectNotFoundException, ObjectDoseNotExistException, ObjectAlreadyExistException
 from src.repositories.mappers.base import DataMapper
 
 
@@ -33,11 +36,7 @@ class BaseRepository:
         return await self.get_filtered()
 
     async def get_one_or_none(self, **filter_by):
-        try:
-            query = select(self.model).filter_by(**filter_by)
-
-        except InvalidRequestError:
-            raise ObjectDoseNotExistException
+        query = select(self.model).filter_by(**filter_by)
 
         result = await self.session.execute(query)
 
@@ -59,15 +58,20 @@ class BaseRepository:
         return self.mapper.map_to_domain_entity(model)
 
     async def add(self, data: BaseModel):
-        add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         try:
+            add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
             result = await self.session.execute(add_data_stmt)
-
-        except sqlalchemy.exc.IntegrityError:
-            raise ObjectDoseNotExistException
-
-        model = result.scalars().one()
-        return self.mapper.map_to_domain_entity(model)
+            model = result.scalars().one()
+            return self.mapper.map_to_domain_entity(model)
+        except IntegrityError as ex:
+            logging.error(f"""Не удалось добавить данные в БД
+                            Входные данные={data}
+                            Тип ошибки={type(ex.orig.__cause__)=}""")
+            if isinstance(ex.orig.__cause__, UniqueViolationError):
+                raise ObjectAlreadyExistException from ex
+            else:
+                logging.error(f"Неизвестная ошибка: Входные данные={data} Тип ошибки={type(ex.orig.__cause__)=}")
+                raise ex
 
     async def add_bulk(self, data: Sequence[BaseModel]):
         add_data_stmt = insert(self.model).values([item.model_dump() for item in data])

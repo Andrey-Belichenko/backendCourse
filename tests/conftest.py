@@ -32,7 +32,7 @@ async def get_db_null_pool():
 
 
 @pytest.fixture(scope="function")
-async def db() -> AsyncGenerator[DBManager]:
+async def db() -> AsyncGenerator[DBManager, None]:
     async for db in get_db_null_pool():
         yield db
 
@@ -62,7 +62,7 @@ async def setup_database(check_test_mode):
 
 
 @pytest.fixture(scope="session")
-async def ac() -> AsyncGenerator[AsyncClient]:
+async def ac() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
@@ -74,8 +74,8 @@ async def register_user(ac, setup_database):
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
-async def authenticated_ac(register_user, ac) -> AsyncGenerator[AsyncClient]:
+@pytest.fixture(scope="session")
+async def authenticated_ac(register_user, ac):
     access_token = await ac.post(
         "/auth/login", json={"email": "user@auto.com", "password": "test_password"}
     )
