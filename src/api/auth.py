@@ -2,7 +2,8 @@ from fastapi import APIRouter, Response, Request
 
 from exceptions.exceptions import UserWithThisEmailAlreadyExistHTTPException, \
     IncorrectPasswordHTTPException, UnauthorizedUserException, UnauthorizedUserHTTPException, IncorrectTokenException, \
-    IncorrectTokenHTTPException, UserAlreadyExistException, UserAlreadyExistHTTPException
+    IncorrectTokenHTTPException, UserAlreadyExistException, UserAlreadyExistHTTPException, EmailNotRegisteredException, \
+    EmailNotRegisteredHTTPException, IncorrectPasswordException
 from src.services.auth import AuthService
 from src.schemas.users import UserRequestAdd, UserAdd
 from src.api.dependencies import UserIdDep, DBDep
@@ -33,16 +34,12 @@ async def login_user(
     data: UserRequestAdd,
     response: Response,
 ):
-    user = await AuthService(db).get_one_user_with_hashed_password(email=data.email)
-
-    if not user:
-        raise UserWithThisEmailAlreadyExistHTTPException
-
-    if not AuthService().verify_password(data.password, user.hashed_password):
+    try:
+        access_token = await AuthService(db).login_user(data)
+    except EmailNotRegisteredException:
+        raise EmailNotRegisteredHTTPException
+    except IncorrectPasswordException:
         raise IncorrectPasswordHTTPException
-
-    access_token = AuthService().create_access_token({"user_id": user.id})
-    response.set_cookie("access_token", access_token)
 
     return {"access_token": access_token}
 

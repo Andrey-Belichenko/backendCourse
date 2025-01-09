@@ -4,7 +4,8 @@ import jwt
 from passlib.context import CryptContext
 
 from exceptions.exceptions import UnauthorizedUserException, IncorrectTokenException, ObjectAlreadyExistException, \
-    UserAlreadyExistException
+    UserAlreadyExistException, EmailNotRegisteredException, IncorrectPasswordException
+from schemas.users import UserRequestAdd
 from services.base import BaseService
 from src.config import settings
 
@@ -45,6 +46,16 @@ class AuthService(BaseService):
         user = await self.db.users.get_user_with_hashed_password(email=email)
 
         return user
+
+    async def login_user(self, data: UserRequestAdd) -> str:
+        user = await self.db.users.get_user_with_hashed_password(email=data.email)
+        if not user:
+            raise EmailNotRegisteredException
+        if not self.verify_password(data.password, user.hashed_password):
+            raise IncorrectPasswordException
+
+        access_token = self.create_access_token({"user_id": user.id})
+        return access_token
 
     async def logout_user(self, request, response):
         self.get_access_token_with_check(request)

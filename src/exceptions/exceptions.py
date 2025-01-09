@@ -50,6 +50,14 @@ class IncorrectTokenException(NabronirovalException):
     detail = "Не верный токен"
 
 
+class IncorrectPasswordException(NabronirovalException):
+    detail = "Не верный пароль"
+
+
+class EmailNotRegisteredException(NabronirovalException):
+    detail = "Пользователь с таким email не зарегистрирован"
+
+
 def check_date_to_after_date_from(date_from: date, date_to: date) -> None:
     if date_to <= date_from:
         raise HTTPException(status_code=422, detail="Дата заезда не может быть позже даты выезда")
@@ -103,4 +111,11 @@ class IncorrectTokenHTTPException(NabronirovalHTTPException):
     detail = "Не верный токен"
 
 
+class EmailNotRegisteredHTTPException(NabronirovalHTTPException):
+    status_code = 409
+    detail = "Пользователь с таким email не зарегистрирован"
 
+
+class NoAccessTokenHTTPException(NabronirovalException):
+    status_code = 401
+    detail = "Вы не предоставили токен доступа"
