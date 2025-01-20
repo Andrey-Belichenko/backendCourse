@@ -1,9 +1,9 @@
 from datetime import date
 
-from config import settings
-from exceptions.exceptions import check_date_to_after_date_from, ObjectDoseNotExistException, HotelNotFoundException
-from schemas.hotels import HotelAdd, HotelPATCH, Hotel
-from services.base import BaseService
+from src.config import settings
+from src.exceptions.exceptions import check_date_to_after_date_from, ObjectDoseNotExistException, HotelNotFoundException
+from src.schemas.hotels import HotelAdd, HotelPATCH, Hotel
+from src.services.base import BaseService
 
 
 class HotelsService(BaseService):
@@ -32,7 +32,7 @@ class HotelsService(BaseService):
         return hotels
 
     async def get_hotel(self, hotel_id: int):
-        return await self.db.hotels.get_one(hotel_id=hotel_id)
+        return await self.db.hotels.get_one(id=hotel_id)
 
     async def add_hotel(self, hotel_data: HotelAdd):
         hotel = await self.db.hotels.add(hotel_data)

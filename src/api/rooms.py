@@ -3,7 +3,7 @@ from datetime import date
 
 from exceptions.exceptions import (HotelNotFoundHTTPException, RoomNotFoundHTTPException, RoomNotFoundException,
                                    HotelNotFoundException)
-from services.rooms import RoomService
+from src.services.rooms import RoomService
 from src.api.dependencies import DBDep
 from src.schemas.rooms import RoomAddRequest, RoomPatchRequest
 

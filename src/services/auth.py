@@ -3,10 +3,10 @@ from datetime import datetime, timezone, timedelta
 import jwt
 from passlib.context import CryptContext
 
-from exceptions.exceptions import UnauthorizedUserException, IncorrectTokenException, ObjectAlreadyExistException, \
+from src.exceptions.exceptions import UnauthorizedUserException, IncorrectTokenException, ObjectAlreadyExistException, \
     UserAlreadyExistException, EmailNotRegisteredException, IncorrectPasswordException
-from schemas.users import UserRequestAdd
-from services.base import BaseService
+from src.schemas.users import UserRequestAdd
+from src.services.base import BaseService
 from src.config import settings
 
 

@@ -2,8 +2,8 @@ import shutil
 
 from fastapi import UploadFile, BackgroundTasks
 
-from services.base import BaseService
-from tasks.tasks import resize_image
+from src.services.base import BaseService
+from src.tasks.tasks import resize_image
 
 
 class ImagesService(BaseService):

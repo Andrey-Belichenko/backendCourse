@@ -1,8 +1,8 @@
-from exceptions.exceptions import ObjectNotFoundException, RoomNotFoundException
-from schemas.bookings import BookingAdd, BookingAddRequest
-from schemas.hotels import Hotel
-from schemas.rooms import Room
-from services.base import BaseService
+from src.exceptions.exceptions import ObjectNotFoundException, RoomNotFoundException
+from src.schemas.bookings import BookingAdd, BookingAddRequest
+from src.schemas.hotels import Hotel
+from src.schemas.rooms import Room
+from src.services.base import BaseService
 
 
 class BookingsService(BaseService):

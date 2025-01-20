@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, Request
 
-from exceptions.exceptions import UserWithThisEmailAlreadyExistHTTPException, \
+from src.exceptions.exceptions import UserWithThisEmailAlreadyExistHTTPException, \
     IncorrectPasswordHTTPException, UnauthorizedUserException, UnauthorizedUserHTTPException, IncorrectTokenException, \
     IncorrectTokenHTTPException, UserAlreadyExistException, UserAlreadyExistHTTPException, EmailNotRegisteredException, \
     EmailNotRegisteredHTTPException, IncorrectPasswordException

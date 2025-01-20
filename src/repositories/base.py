@@ -10,7 +10,7 @@ from typing import Sequence
 from pydantic import BaseModel
 from sqlalchemy.exc import NoResultFound
 
-from exceptions.exceptions import ObjectNotFoundException, ObjectDoseNotExistException, ObjectAlreadyExistException
+from src.exceptions.exceptions import ObjectNotFoundException, ObjectDoseNotExistException, ObjectAlreadyExistException
 from src.repositories.mappers.base import DataMapper
 
 

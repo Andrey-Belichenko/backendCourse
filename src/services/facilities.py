@@ -1,5 +1,5 @@
-from schemas.facilities import FacilitiesAdd
-from services.base import BaseService
+from src.schemas.facilities import FacilitiesAdd
+from src.services.base import BaseService
 
 
 class FacilitiesService(BaseService):
