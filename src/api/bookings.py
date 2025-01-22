@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Body
 
-from src.exceptions.exceptions import AllRoomsAreBookedException, AllRoomsAreBookedHTTPException
+from src.exceptions.exceptions import AllRoomsAreBookedException, AllRoomsAreBookedHTTPException, \
+    NoAccessTokenHTTPException
 from src.services.bookings import BookingsService
 from src.schemas.bookings import BookingAddRequest
 from src.api.dependencies import DBDep, UserIdDep
@@ -17,6 +18,8 @@ async def create_booking(
         booking = await BookingsService(db).create_booking(user_id, booking_request)
     except AllRoomsAreBookedException:
         raise AllRoomsAreBookedHTTPException
+    except NoAccessTokenHTTPException:
+        raise NoAccessTokenHTTPException
 
     return {"status": "OK", "data": booking}
 
@@ -24,7 +27,6 @@ async def create_booking(
 @router.get("")
 async def get_bookings(db: DBDep):
     all_bookings = await BookingsService(db).get_all_bookings()
-
     return {"bookings": all_bookings}
 
 

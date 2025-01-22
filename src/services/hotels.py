@@ -1,6 +1,6 @@
 from datetime import date
 
-from src.config import settings
+#from src.config import settings
 from src.exceptions.exceptions import check_date_to_after_date_from, ObjectDoseNotExistException, HotelNotFoundException
 from src.schemas.hotels import HotelAdd, HotelPATCH, Hotel
 from src.services.base import BaseService
@@ -16,8 +16,8 @@ class HotelsService(BaseService):
     ):
         """Получение всех записей отелей из БД"""
 
-        per_page = pagination.per_page or settings.DEFAULT_PAGINATION
-
+        #per_page = pagination.per_page or settings.DEFAULT_PAGINATION
+        per_page = pagination.per_page or 5
         check_date_to_after_date_from(date_from, date_to)
 
         hotels = await self.db.hotels.get_filtered_by_time(

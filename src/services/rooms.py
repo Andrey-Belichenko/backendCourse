@@ -1,11 +1,11 @@
 from datetime import date
 
-from exceptions.exceptions import (check_date_to_after_date_from, ObjectDoseNotExistException,
+from src.exceptions.exceptions import (check_date_to_after_date_from, ObjectDoseNotExistException,
                                    RoomNotFoundException)
-from schemas.facilities import RoomFacilitiesAdd
-from schemas.rooms import RoomAddRequest, RoomAdd, RoomPatchRequest, RoomPatch, Room
-from services.base import BaseService
-from services.hotels import HotelsService
+from src.schemas.facilities import RoomFacilitiesAdd
+from src.schemas.rooms import RoomAddRequest, RoomAdd, RoomPatchRequest, RoomPatch, Room
+from src.services.base import BaseService
+from src.services.hotels import HotelsService
 
 
 class RoomService(BaseService):
@@ -39,7 +39,8 @@ class RoomService(BaseService):
             RoomFacilitiesAdd(room_id=room.id, facility_id=f_id) for f_id in room_data.facilities_ids
         ]
 
-        await self.db.rooms_facilities.add_bulk(rooms_facilities_data)
+        if rooms_facilities_data:
+            await self.db.rooms_facilities.add_bulk(rooms_facilities_data)
         await self.db.commit()
 
         return room

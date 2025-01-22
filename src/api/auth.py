@@ -2,7 +2,7 @@ from fastapi import APIRouter, Response, Request
 
 from src.exceptions.exceptions import UserWithThisEmailAlreadyExistHTTPException, \
     IncorrectPasswordHTTPException, UnauthorizedUserException, UnauthorizedUserHTTPException, IncorrectTokenException, \
-    IncorrectTokenHTTPException, UserAlreadyExistException, UserAlreadyExistHTTPException, EmailNotRegisteredException, \
+    IncorrectTokenHTTPException, UserAlreadyExistException, UserAlreadyExistHTTPException, EmailNotRegisteredException,\
     EmailNotRegisteredHTTPException, IncorrectPasswordException
 from src.services.auth import AuthService
 from src.schemas.users import UserRequestAdd, UserAdd

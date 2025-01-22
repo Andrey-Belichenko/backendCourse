@@ -5,7 +5,7 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
-from exceptions.exceptions import WrongDatesOfBookingException, RoomNotFoundException
+from src.exceptions.exceptions import WrongDatesOfBookingException, RoomNotFoundException
 from src.repositories.mappers.mappers import RoomDataMapper, RoomDataWithRelsMapper
 from src.repositories.utils import rooms_ids_for_booking
 from src.repositories.base import BaseRepository
