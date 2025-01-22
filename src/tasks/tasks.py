@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from time import sleep
 
 from src.database import async_session_maker_null_pool
 from src.tasks.celery_app import celery_instance
@@ -8,6 +9,12 @@ from PIL import Image
 import os
 
 from src.utils.db_manager import DBManager
+
+
+@celery_instance.task
+def test_task():
+    sleep(5)
+    print("Я молодец")
 
 
 # @celery_instance.task
