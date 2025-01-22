@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 
 from sqlalchemy import select, func
@@ -8,6 +9,7 @@ from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import HotelDataMapper
 from src.repositories.utils import rooms_ids_for_booking
 from src.models.hotels import HotelsORM
+from src.schemas.hotels import Hotel
 
 
 class HotelsRepository(BaseRepository):
@@ -23,7 +25,7 @@ class HotelsRepository(BaseRepository):
         title,
         limit,
         offset,
-    ):
+    ) -> list[Hotel]:
         if date_to <= date_from:
             raise WrongDatesOfBookingException
 
@@ -45,5 +47,5 @@ class HotelsRepository(BaseRepository):
         query = query.limit(limit).offset(offset)
 
         result = await self.session.execute(query)
-
+        logging.info(f"{result=}")
         return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]

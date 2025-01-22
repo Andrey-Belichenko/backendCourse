@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import Query, Body, APIRouter
 from fastapi_cache.decorator import cache
 
-from src.exceptions.exceptions import ObjectDoseNotExistException, HotelNotFoundHTTPException
+from src.exceptions.exceptions import HotelNotFoundHTTPException, ObjectNotFoundException
 from src.services.hotels import HotelsService
 from src.schemas.hotels import HotelAdd, HotelPATCH
 from src.api.dependencies import PaginationDep, DBDep
@@ -38,7 +38,7 @@ async def get_hotels(
 async def get_one_hotel(hotel_id: int, db: DBDep):
     try:
         hotel = await HotelsService(db).get_hotel(hotel_id=hotel_id)
-    except ObjectDoseNotExistException:
+    except ObjectNotFoundException:
         raise HotelNotFoundHTTPException
 
     return hotel
