@@ -17,20 +17,32 @@ class HotelsService(BaseService):
     ):
         """Получение всех записей отелей из БД"""
 
-        per_page = pagination.per_page or settings.DEFAULT_PAGINATION
+        # per_page = pagination.per_page or settings.DEFAULT_PAGINATION
+        #
+        # check_date_to_after_date_from(date_from, date_to)
+        #
+        # hotels = await self.db.hotels.get_filtered_by_time(
+        #     title=title,
+        #     location=location,
+        #     limit=per_page,
+        #     offset=per_page * (pagination.page - 1),
+        #     date_from=date_from,
+        #     date_to=date_to,
+        # )
+        # return hotels
 
         check_date_to_after_date_from(date_from, date_to)
-
-        hotels = await self.db.hotels.get_filtered_by_time(
-            title=title,
-            location=location,
-            limit=per_page,
-            offset=per_page * (pagination.page - 1),
+        per_page = pagination.per_page or 5
+        return await self.db.hotels.get_filtered_by_time(
             date_from=date_from,
             date_to=date_to,
+            location=location,
+            title=title,
+            limit=per_page,
+            offset=per_page * (pagination.page - 1),
         )
 
-        return hotels
+
 
     async def get_hotel(self, hotel_id: int):
         return await self.db.hotels.get_one(id=hotel_id)

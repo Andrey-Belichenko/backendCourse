@@ -26,11 +26,30 @@ class HotelsRepository(BaseRepository):
         limit,
         offset,
     ) -> list[Hotel]:
-        if date_to <= date_from:
-            raise WrongDatesOfBookingException
-
+        # if date_to <= date_from:
+        #     raise WrongDatesOfBookingException
+        #
+        # rooms_ids_to_get = rooms_ids_for_booking(date_from=date_from, date_to=date_to)
+        #
+        # hotels_ids_to_get = (
+        #     select(RoomsORM.hotel_id)
+        #     .select_from(RoomsORM)
+        #     .filter(RoomsORM.id.in_(rooms_ids_to_get))
+        # )
+        #
+        # query = select(HotelsORM).filter(HotelsORM.id.in_(hotels_ids_to_get))
+        #
+        # if location:
+        #     query = query.filter(func.lower(self.model.location).contains(location.strip().lower()))
+        # if title:
+        #     query = query.filter(func.lower(self.model.title).contains(title.strip().lower()))
+        #
+        # query = query.limit(limit).offset(offset)
+        #
+        # result = await self.session.execute(query)
+        #
+        # return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
         rooms_ids_to_get = rooms_ids_for_booking(date_from=date_from, date_to=date_to)
-
         hotels_ids_to_get = (
             select(RoomsORM.hotel_id)
             .select_from(RoomsORM)
@@ -40,12 +59,12 @@ class HotelsRepository(BaseRepository):
         query = select(HotelsORM).filter(HotelsORM.id.in_(hotels_ids_to_get))
 
         if location:
-            query = query.filter(func.lower(self.model.location).contains(location.strip().lower()))
+            query = query.filter(func.lower(HotelsORM.location).contains(location.strip().lower()))
         if title:
-            query = query.filter(func.lower(self.model.title).contains(title.strip().lower()))
+            query = query.filter(func.lower(HotelsORM.title).contains(title.strip().lower()))
 
         query = query.limit(limit).offset(offset)
 
         result = await self.session.execute(query)
-        logging.info(f"{result=}")
-        return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
+
+        return [self.mapper.map_to_domain_entity(hotel) for hotel in result.scalars().all()]
